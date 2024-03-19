@@ -1,5 +1,12 @@
 use std::collections::HashMap;
 
+enum OrgChartAction
+{
+    AddAction(String, String),
+    ListAction(String),
+    EmptyAction,
+}
+
 fn main()
 {
     //let f: f64 = 100.0;
@@ -189,13 +196,7 @@ fn pig_latin(s: &String) -> String
     result.clone()
 }
 
-enum Action
-{
-    AddAction(String, String),
-    ListAction(String),
-    EmptyAction,
-}
-
+#[allow(dead_code)]
 fn simulate_dept_employee_commands()
 {
     let commands = vec!
@@ -219,26 +220,28 @@ fn simulate_dept_employee_commands()
     }
 }
 
+#[allow(dead_code)]
 fn execute_command(command: &str, org_chart: &mut HashMap<String, Vec<String>>)
 {
     let words: Vec<&str> = command.split_whitespace().collect();
     let action_verb = words[0];
-    let mut action: Action = Action::EmptyAction;
+    let mut action: OrgChartAction = OrgChartAction::EmptyAction;
     match action_verb
     {
-        "Add" => action = Action::AddAction(words[1].to_string(), words[3].to_string()),
-        "List" => action = Action::ListAction(words[1].to_string()),
+        "Add" => action = OrgChartAction::AddAction(words[1].to_string(), words[3].to_string()),
+        "List" => action = OrgChartAction::ListAction(words[1].to_string()),
         _ => (),
     }
 
     execute_action(&action, org_chart);
 }
 
-fn execute_action(action: &Action, org_chart: &mut HashMap<String, Vec<String>>)
+#[allow(dead_code)]
+fn execute_action(action: &OrgChartAction, org_chart: &mut HashMap<String, Vec<String>>)
 {
     match action
     {
-        Action::AddAction(name, dept) =>
+        OrgChartAction::AddAction(name, dept) =>
         {
             println!("ACTION: Adding {name} to {dept}");
             if org_chart.contains_key(&dept.to_string())
@@ -251,7 +254,7 @@ fn execute_action(action: &Action, org_chart: &mut HashMap<String, Vec<String>>)
                 org_chart.insert(dept.clone(), names.clone());
             }
         }
-        Action::ListAction(dept) =>
+        OrgChartAction::ListAction(dept) =>
         {
             println!("ACTION: Listing employees in dept {dept}");
             let names: Vec<String> = org_chart.get_mut(&dept.to_string()).unwrap().to_vec();
