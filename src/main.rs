@@ -17,8 +17,10 @@ fn main()
     //let most_common = get_most_common_int_in_list(&list_of_ints);
     //println!("Most frequent occurrence is {} ({} times)", most_common.0, most_common.1);
 
-    let english_string = String::from("This is a dumb sentence to convert to pig latin");
-    println!("The pig latin for \"{}\" is \"{}\"", english_string, pig_latin(&english_string));
+    //let english_string = String::from("This is a dumb sentence to convert to pig latin");
+    //println!("The pig latin for \"{}\" is \"{}\"", english_string, pig_latin(&english_string));
+
+    simulate_dept_employee_commands();
 }
 
 #[allow(dead_code)]
@@ -152,12 +154,115 @@ fn get_most_common_int_in_list(ints: &Vec<u32>) -> (u32, u32)
 }
 
 #[allow(dead_code)]
-fn pig_latin(s: &String) -> &str
+fn pig_latin(s: &String) -> String
 {
+    let mut result = String::new();
+    let mut is_start = true;
     for word in s.split_whitespace()
     {
+        if is_start
+        {
+            is_start = false;
+        }
+        else
+        {
+            result.push(' ');
+        }
 
+        let first = &word[0..1];
+        let vowels = ['a', 'e', 'i', 'o', 'u'];
+        let starts_with_vowel = vowels.iter().any(|v| first.starts_with(*v));
+
+        if word.len() > 0
+        {
+            let end = &word[1..];
+            if starts_with_vowel { result += format!("{first}{end}hay").as_str(); }
+            else { result += format!("{end}{first}ay").as_str(); }
+        }
+        else
+        {
+            if starts_with_vowel { result += format!("{first}hay").as_str(); }
+            else { result += format!("{first}ay").as_str(); }
+        }
     }
 
-    ""
+    result.clone()
+}
+
+enum Action
+{
+    AddAction(String, String),
+    ListAction(String),
+    EmptyAction,
+}
+
+fn simulate_dept_employee_commands()
+{
+    let commands = vec!
+    [
+        "Add Sally to Engineering",
+        "Add Amir to Sales",
+        "Add Brian to Engineering",
+        "List Engineering",
+        "Add Mark to Engineering",
+        "Add Kathryn to HR",
+        "Add Rich to C-Suite",
+        "List Sales",
+        "List Engineering",
+    ];
+
+    let mut org_chart: HashMap<String, Vec<String>> = HashMap::new();
+
+    for command in commands
+    {
+        execute_command(command, &mut org_chart);
+    }
+}
+
+fn execute_command(command: &str, org_chart: &mut HashMap<String, Vec<String>>)
+{
+    let words: Vec<&str> = command.split_whitespace().collect();
+    let action_verb = words[0];
+    let mut action: Action = Action::EmptyAction;
+    match action_verb
+    {
+        "Add" => action = Action::AddAction(words[1].to_string(), words[3].to_string()),
+        "List" => action = Action::ListAction(words[1].to_string()),
+        _ => (),
+    }
+
+    execute_action(&action, org_chart);
+}
+
+fn execute_action(action: &Action, org_chart: &mut HashMap<String, Vec<String>>)
+{
+    match action
+    {
+        Action::AddAction(name, dept) =>
+        {
+            println!("ACTION: Adding {name} to {dept}");
+            if org_chart.contains_key(&dept.to_string())
+            {
+                org_chart.get_mut(&dept.to_string()).unwrap().push(name.to_string());
+            }
+            else
+            {
+                let names: Vec<String> = vec![name.to_string()];
+                org_chart.insert(dept.clone(), names.clone());
+            }
+        }
+        Action::ListAction(dept) =>
+        {
+            println!("ACTION: Listing employees in dept {dept}");
+            let names: Vec<String> = org_chart.get_mut(&dept.to_string()).unwrap().to_vec();
+            for name in names
+            {
+                println!("-- {name}");
+            }
+        }
+        _ =>
+        {
+            println!("Invalid action");
+        }
+    }
 }
